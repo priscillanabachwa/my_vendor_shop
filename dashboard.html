@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Dashboard - DigitalVendor</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.6"></script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #fff8f4;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<nav class="bg-white shadow-sm border-b border-stone-100">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <div class="w-10 h-10 bg-[#f27024] rounded-lg flex items-center justify-center">
+                <span class="material-symbols-outlined text-white">storefront</span>
+            </div>
+            <h1 class="text-xl font-bold text-[#a04100]">DigitalVendor</h1>
+        </div>
+        <button id="logoutBtn" class="px-4 py-2 bg-[#a04100] text-white rounded-lg hover:bg-opacity-90 transition-all">
+            Logout
+        </button>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-stone-100">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-[#584238]">Total Sales</p>
+                    <p id="totalSales" class="text-3xl font-bold text-[#a04100]">$0</p>
+                </div>
+                <span class="material-symbols-outlined text-[#f27024] text-5xl opacity-20">trending_up</span>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-stone-100">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-[#584238]">Active Orders</p>
+                    <p id="activeOrders" class="text-3xl font-bold text-[#a04100]">0</p>
+                </div>
+                <span class="material-symbols-outlined text-[#f27024] text-5xl opacity-20">shopping_cart</span>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-stone-100">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-[#584238]">Customers</p>
+                    <p id="totalCustomers" class="text-3xl font-bold text-[#a04100]">0</p>
+                </div>
+                <span class="material-symbols-outlined text-[#f27024] text-5xl opacity-20">people</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-stone-100">
+        <h2 class="text-2xl font-bold text-[#a04100] mb-4">Welcome!</h2>
+        <div id="userInfo" class="space-y-2">
+            <p id="userEmail" class="text-[#584238]"></p>
+            <p class="text-sm text-[#8c7166]">You're successfully logged into DigitalVendor.</p>
+        </div>
+    </div>
+</main>
+
+<script>
+    const SUPABASE_URL = 'https://iunirrrnjxzxtqfgvjjn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1bmlycnJuanh6eHRxZmd2ampuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4NjE4ODUsImV4cCI6MjA5MjQzNzg4NX0.rVFa8YOBPcXN7bhHx1WbvYZv0aIZCtb2Y2RdXrjhtUA';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Check if user is logged in
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (!session) {
+            window.location.href = 'login.html';
+        } else {
+            // Redirect to home page (main dashboard)
+            window.location.href = 'home.html';
+        }
+    });
+
+    // Logout button
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.href = 'login.html';
+    });
+</script>
+</body>
+</html>
