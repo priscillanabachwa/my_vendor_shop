@@ -269,67 +269,54 @@ Displays key metrics:
 
 ## 💾 Data Persistence
 
-### LocalStorage Keys
+### Supabase tables (`supabase/migrations/`)
 
-**User Session:**
-```javascript
-localStorage.setItem('userRole', 'buyer' | 'vendor')
-localStorage.setItem('userName', 'John Doe')
-localStorage.setItem('userEmail', 'john@example.com')
-localStorage.setItem('isLoggedIn', 'true')
-```
+**profiles** — `id`, `full_name`, `email`, `role` (`buyer` | `vendor`), auto-created by a database trigger on signup.
 
-**Vendor Data:**
-```javascript
-localStorage.setItem('vendorProducts', JSON.stringify([...]))
-localStorage.setItem('vendorCustomers', JSON.stringify([...]))
-localStorage.setItem('vendorMessages', JSON.stringify([...]))
-```
+**products** — a vendor's catalog: `vendor_id`, `name`, `description`, `category`, `price`, `stock`, `icon`.
 
-**Buyer Data:**
-```javascript
-localStorage.setItem('cart', JSON.stringify([...]))
-localStorage.setItem('orders', JSON.stringify([...]))
-```
+**orders** / **order_items** — created at checkout.
+
+**messages** — `sender_id`, `recipient_id`, `product_id`, `body`, `read`.
+
+All tables have row level security enabled: a user can only read/write the rows they're entitled to (their own profile, their own products, orders they bought or sold into, messages they sent or received).
+
+### Browser localStorage
+Only the pre-checkout shopping cart (`cart`) lives in localStorage — it's cleared once checkout creates a real `orders` row.
 
 ### Data Availability
-- All data survives page refresh
-- Data persists until user logout
-- Each browser has separate data
-- Clearing cache removes all data
+- Product/order/message data is shared across devices and browsers (it's in the database, not per-browser)
+- The cart itself is per-browser until checkout
+- Clearing cache only affects the in-progress cart, not your account data
 
 ---
 
 ## 🔐 Authentication Flow
 
 ### Login Flow
-1. User navigates to login page
-2. Selects role (Buyer or Vendor)
+1. User navigates to `login-role.html`
+2. Selects role (Buyer or Vendor) — used to pick which dashboard to open after login
 3. Enters email and password
-4. System validates credentials
-5. Stores session in localStorage
-6. Redirects to role-specific dashboard
+4. `supabase.auth.signInWithPassword()` validates credentials against the real backend
+5. The user's actual `profiles.role` (not the button they clicked) decides the redirect
 
 ### Signup Flow
-1. User navigates to signup page
+1. User navigates to `signup-role.html`
 2. Selects role (Buyer or Vendor)
-3. Fills registration form
-4. Accepts terms & conditions
-5. Creates account
-6. Automatically logs in
-7. Redirects to dashboard
+3. Fills registration form and accepts terms
+4. `supabase.auth.signUp()` creates the account; a database trigger creates the matching `profiles` row from the role/name passed in
+5. Redirects to the role-specific dashboard
 
 ### Logout Flow
 1. User clicks logout button
 2. Confirmation dialog appears
-3. Session data cleared from localStorage
-4. Redirects to login page
+3. `supabase.auth.signOut()` clears the real session
+4. Redirects to `login-role.html`
 
 ### Role Switching
-1. User clicks "Switch Role" button
-2. Role updated in localStorage
-3. Instant redirect to new dashboard
-4. All user data preserved
+1. User clicks "Switch to Buyer/Vendor Mode"
+2. `profiles.role` is updated in the database (a real, persistent change — not just a local flag)
+3. Redirect to the matching dashboard
 
 ---
 
@@ -393,30 +380,22 @@ localStorage.setItem('orders', JSON.stringify([...]))
 ## 🚀 Performance Features
 
 - **Fast Loading:** Minimal external dependencies
-- **Efficient Storage:** Optimized localStorage usage
 - **Smooth Navigation:** Instant route switching
 - **Responsive Layout:** CSS Grid and Flexbox
-- **Real-time Updates:** Immediate data reflection
-- **No Server Dependency:** Works offline
 
 ---
 
 ## 🛡️ Security Considerations
 
 ### Current Implementation
-- Client-side validation
-- localStorage-based session
-- No sensitive data exposure
-- HTTPS recommended for production
+- Real authentication via Supabase Auth (`supabase.auth`), passwords never touch application code
+- Row level security policies on every table scope reads/writes to what a user actually owns
+- Client-supplied text (product names/descriptions, messages, customer names) is HTML-escaped before being rendered
 
-### Production Recommendations
-- Implement backend authentication
-- Use JWT tokens
-- Add password hashing
-- Implement HTTPS
-- Add CSRF protection
-- Rate limiting on auth endpoints
-- Secure session management
+### Still worth doing before production
+- Add rate limiting / captcha on auth endpoints (Supabase supports this via `auth.rate_limit` / `auth.captcha` in `supabase/config.toml`)
+- Add server-side validation for numeric fields (price/stock) beyond the client-side form constraints
+- Add payment integration — checkout currently records an order but doesn't collect payment
 
 ---
 
