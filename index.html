@@ -376,6 +376,7 @@
                         <div class="product-location">🏬 ${escapeHtml(product.vendorName || 'Vendor')}</div>
                         <div class="product-price">$${Number(product.price).toFixed(2)}</div>
                         <button class="add-to-cart-btn" onclick="addToCart('${product.id}')">Add to Cart</button>
+                        <button class="add-to-cart-btn" style="background:#666;margin-top:6px;" onclick="messageVendor('${product.id}')">💬 Message Vendor</button>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -415,6 +416,24 @@
             saveCart();
             updateCartCount();
             alert(`✓ ${product.name} added to cart!`);
+        }
+
+        async function messageVendor(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const body = prompt(`Send a message to the vendor about "${product.name}":`);
+            if (!body) return;
+
+            const { data: { session } } = await window.supabaseClient.auth.getSession();
+            const { error } = await window.supabaseClient.from('messages').insert({
+                sender_id: session.user.id,
+                recipient_id: product.vendor_id,
+                product_id: product.id,
+                body
+            });
+
+            alert(error ? 'Could not send message: ' + error.message : 'Message sent!');
         }
 
         function updateCartCount() {
