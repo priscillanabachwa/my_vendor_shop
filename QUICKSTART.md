@@ -23,84 +23,68 @@ npm start
 - Signup: http://127.0.0.1:8000/signup-role.html
 - Dashboard: http://127.0.0.1:8000/vendor-dashboard.html
 
-## 👤 Test Account Credentials
+## 👤 Test Accounts
 
-Since the app uses local storage, you can create any account you want!
-
-**Example Buyer Account:**
-- Email: buyer@example.com
-- Password: password123
-
-**Example Vendor Account:**
-- Email: vendor@example.com
-- Password: password123
+Auth is real (Supabase), so you need to actually sign up — there's no bypass or hardcoded demo login. Use two different email addresses (one per role) at http://127.0.0.1:8000/signup-role.html; passwords must be 8+ characters.
 
 ## 🎯 Quick Tasks
 
 ### Add a Product as Vendor
-1. Go to http://127.0.0.1:8000/login-role.html
-2. Select **Vendor** role
-3. Enter email: `vendor@example.com` and password: `password123`
-4. Click "My Products" tab
-5. Click "+ Add New Product"
-6. Fill in details and save
-7. View product on dashboard
+1. Sign up at http://127.0.0.1:8000/signup-role.html with the **Vendor** role
+2. Click "My Products" tab
+3. Click "+ Add New Product"
+4. Fill in details and save — this inserts a row into the real `products` table
+5. View product on dashboard
 
 ### Browse Products as Buyer
-1. Go to http://127.0.0.1:8000/login-role.html
-2. Select **Buyer** role
-3. Enter email: `buyer@example.com` and password: `password123`
-4. Browse products from the marketplace
-5. Use category filters or search
-6. Add items to cart
-7. View order summary
+1. Sign up at http://127.0.0.1:8000/signup-role.html with the **Buyer** role (use a different email than your vendor account)
+2. Browse products from the marketplace — you'll see the product(s) your vendor account added
+3. Use category filters or search
+4. Add items to cart, then checkout to create a real order
 
 ### Switch Between Roles
 **From Vendor Dashboard:**
-- Click "Switch to Buyer Mode" button (top-right)
+- Click "Switch to Buyer Mode" button (top-right) — this really updates your account's role in the database
 
-**From Buyer Home:**
+**From Buyer Profile:**
 - Go to Profile (👤)
 - Click "Switch to Vendor Mode"
-- Both redirect seamlessly
 
 ### Logout
 - Click the "Logout" button in the header or profile
-- You'll be redirected to login page
-- All data is persisted in browser storage
+- Ends the real Supabase session and redirects to the login page
 
 ## 📊 Dashboard Statistics
 
 ### Vendor Dashboard Shows:
-- Total Products Created
-- Total Customers
-- Total Revenue (sum of all sales)
-- Vendor Rating (default: 4.8)
+- Total Products (real count from your `products` rows)
+- Total Customers (distinct buyers who've ordered from you)
+- Total Revenue (sum of your `order_items`)
+- Rating (shows "—" — there's no reviews feature yet)
 
 ### Updates When:
-- New product is added
-- Product is sold (calculated from sales data)
-- Customer interacts with your products
+- You add/edit/delete a product
+- A buyer checks out with one of your products in their cart
+- A buyer messages you
 
 ## 💬 Features to Try
 
 ### Vendor Features:
 - ✅ Add, edit, delete products
-- ✅ View customer list
-- ✅ Monitor sales per product
+- ✅ View customer list (derived from real orders)
+- ✅ View dashboard analytics (real product/customer/revenue counts)
 - ✅ Receive and reply to messages
-- ✅ View dashboard analytics
 - ✅ Switch to buyer mode
 
 ### Buyer Features:
 - ✅ Browse all products
 - ✅ Filter by category
 - ✅ Search products
-- ✅ Add items to cart
-- ✅ Manage cart quantities
-- ✅ View profile settings
+- ✅ Add items to cart, checkout to place a real order
+- ✅ View order history
+- ✅ Message a vendor about a product
+- ✅ View/edit profile settings
 - ✅ Switch to vendor mode
-- ✅ Simulate role switching
 
 ## 🔧 Troubleshooting
 
@@ -109,19 +93,18 @@ Since the app uses local storage, you can create any account you want!
 - Check browser console for errors (F12)
 - Clear browser cache (Ctrl+Shift+Delete)
 
-### Role Not Switching
-- Check browser's localStorage is enabled
-- Clear localStorage: Open DevTools → Application → Storage → Clear All
+### Signup/Login Fails
+- Password must be at least 8 characters (signup) or the account's real password (login) — there's no demo bypass
+- Check the browser console for the actual Supabase error message
+- Confirm `supabase/migrations/` has been pushed to the linked project (`npx supabase db push --linked`) — signup fails if the `profiles` table/trigger doesn't exist yet
 
-### Data Not Saving
-- All data uses localStorage
-- Make sure JavaScript is enabled
-- Check browser console for errors
+### Products/Orders Not Showing Up
+- Confirm the migration in `supabase/migrations/` has been applied — without it, the `products`/`orders`/`messages` tables don't exist
+- Check the browser console for RLS ("row level security") errors, which usually mean you're signed in as the wrong account
 
 ### Session Lost
-- localStorage persists until you clear it manually
-- Logout clears the session
-- Opening new tab keeps session
+- Supabase sessions persist across tabs/refreshes until you log out or the token expires
+- Logout calls `supabase.auth.signOut()` and clears the real session
 
 ## 📱 Supported Browsers
 
@@ -144,13 +127,12 @@ Since the app uses local storage, you can create any account you want!
    - Switch back to vendor to see customer/revenue updates
 
 3. **Testing Messages:**
-   - Add a message in the messages tab (vendor)
-   - Message will appear with timestamp
-   - Reply to maintain conversation history
+   - As a buyer, click "💬 Message Vendor" on a product card
+   - As the vendor, check the Messages tab and reply
+   - Replies show up in the buyer's messages.html too
 
 4. **Sample Data:**
-   - Default products are pre-loaded for buyers
-   - Vendors start with empty product list
+   - There's no pre-loaded data — vendors start with an empty product list
    - Add your own products to test features
 
 ## 🚀 Next Steps
@@ -174,6 +156,10 @@ DigitalVendor/
 ├── orders.html              # Order history
 ├── messages.html            # Messages
 ├── profile.html             # User profile
+├── auth-callback.html       # OAuth callback handler
+├── reset-password.html      # Password reset page
+├── js/supabase-client.js    # Shared Supabase client + auth guard
+├── supabase/migrations/     # Database schema + RLS policies
 ├── package.json             # NPM config
 └── README.md                # Full documentation
 ```
@@ -181,12 +167,9 @@ DigitalVendor/
 ## 🆘 Need Help?
 
 - Check README.md for full documentation
-- Review inline code comments
 - Check browser console (F12) for errors
-- All data is in browser localStorage (DevTools → Application)
+- Check the Supabase dashboard's Table Editor / Logs if data isn't showing up as expected
 
 ---
 
 **Happy Testing! 🎉**
-
-The app is fully functional and ready to demonstrate role-based e-commerce features!
