@@ -205,8 +205,14 @@
             </button>
         </div>
 
+        <!-- Switch to Vendor Mode (buyers only) -->
+        <button id="switchToVendorBtn" class="w-full mt-6 hidden items-center justify-center gap-2 p-4 bg-primary-container/10 border border-primary/10 text-primary rounded-xl font-label-lg text-label-lg hover:bg-primary-container/20 transition-all active:scale-[0.98]">
+            <span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+            Switch to Vendor Mode
+        </button>
+
         <!-- Logout -->
-        <button id="logoutBtn" class="w-full mt-6 flex items-center justify-center gap-2 p-4 bg-error-container/20 border border-error/10 text-error rounded-xl font-label-lg text-label-lg hover:bg-error-container/30 transition-all active:scale-[0.98]">
+        <button id="logoutBtn" class="w-full mt-3 flex items-center justify-center gap-2 p-4 bg-error-container/20 border border-error/10 text-error rounded-xl font-label-lg text-label-lg hover:bg-error-container/30 transition-all active:scale-[0.98]">
             <span class="material-symbols-outlined" data-icon="logout">logout</span>
             Logout
         </button>
@@ -257,9 +263,30 @@
         document.getElementById('profileRole').textContent = profile.role;
         document.getElementById('profileImage').src = avatar;
         document.getElementById('headerProfile').src = avatar;
+
+        if (profile.role === 'buyer') {
+            const switchBtn = document.getElementById('switchToVendorBtn');
+            switchBtn.classList.remove('hidden');
+            switchBtn.classList.add('flex');
+        }
     }
 
     init();
+
+    document.getElementById('switchToVendorBtn').addEventListener('click', async () => {
+        if (!confirm('Switch your account to Vendor mode?')) return;
+
+        const { error } = await window.supabaseClient
+            .from('profiles')
+            .update({ role: 'vendor' })
+            .eq('id', currentProfile.id);
+
+        if (error) {
+            alert('Could not switch roles: ' + error.message);
+            return;
+        }
+        window.location.href = 'vendor-dashboard.html';
+    });
 
     // Edit Profile
     document.getElementById('editProfileBtn').addEventListener('click', async () => {
