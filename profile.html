@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.6"></script>
+    <script src="js/supabase-client.js"></script>
     <style>
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -125,7 +126,7 @@
                 <h2 id="profileName" class="font-headline-md text-headline-md text-on-surface">Loading...</h2>
                 <p id="profileEmail" class="font-body-sm text-body-sm text-on-surface-variant"></p>
                 <div class="mt-2 inline-flex items-center px-2 py-0.5 rounded-full bg-secondary-container/20 text-on-secondary-container">
-                    <span class="font-label-md text-label-md">Gold Merchant</span>
+                    <span id="profileRole" class="font-label-md text-label-md capitalize"></span>
                 </div>
             </div>
         </div>
@@ -169,7 +170,6 @@
                     <span class="font-label-lg text-label-lg text-on-surface">Notifications</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="px-2 py-0.5 bg-error-container text-on-error-container rounded-full text-[10px] font-bold">2</span>
                     <span class="material-symbols-outlined text-outline/50 group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
                 </div>
             </button>
@@ -220,7 +220,7 @@
 
 <!-- Navigation Bar -->
 <nav class="bg-white fixed bottom-0 w-full z-50 rounded-t-2xl border-t border-stone-100 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] flex justify-around items-center h-20 px-2">
-    <a id="homeNav" class="flex flex-col items-center justify-center text-stone-400 px-4 py-1 hover:text-orange-500 transition-colors active:scale-90 transition-transform duration-150" href="home.html">
+    <a id="homeNav" class="flex flex-col items-center justify-center text-stone-400 px-4 py-1 hover:text-orange-500 transition-colors active:scale-90 transition-transform duration-150" href="index.html">
         <span class="material-symbols-outlined" data-icon="home">home</span>
         <span class="font-['Plus_Jakarta_Sans'] text-[11px] font-medium">Home</span>
     </a>
@@ -239,35 +239,44 @@
 </nav>
 
 <script>
-    // DEMO MODE - Check for logged-in user
-    
-    // Check authentication
-    function checkAuth() {
-        const demoUser = localStorage.getItem('demoUser');
-        if (!demoUser) {
-            window.location.href = 'login.html';
-        } else {
-            loadUserProfile(JSON.parse(demoUser));
-        }
+    let currentProfile = null;
+
+    async function init() {
+        const result = await requireSession();
+        if (!result) return;
+        currentProfile = result.profile;
+        loadUserProfile(result.session.user, result.profile);
     }
-    
-    // Load user profile
-    function loadUserProfile(user) {
-        const userName = user.name || user.email || 'User';
-        const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.email)}&background=f27024&color=fff`;
-        
+
+    function loadUserProfile(user, profile) {
+        const userName = profile.full_name || user.email || 'User';
+        const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=f27024&color=fff`;
+
         document.getElementById('profileName').textContent = userName;
         document.getElementById('profileEmail').textContent = user.email;
+        document.getElementById('profileRole').textContent = profile.role;
         document.getElementById('profileImage').src = avatar;
         document.getElementById('headerProfile').src = avatar;
     }
-    
-    // Run auth check on page load
-    checkAuth();
+
+    init();
 
     // Edit Profile
-    document.getElementById('editProfileBtn').addEventListener('click', () => {
-        alert('Edit Profile feature coming soon!');
+    document.getElementById('editProfileBtn').addEventListener('click', async () => {
+        const newName = prompt('Full name:', currentProfile?.full_name || '');
+        if (!newName) return;
+
+        const { error } = await window.supabaseClient
+            .from('profiles')
+            .update({ full_name: newName })
+            .eq('id', currentProfile.id);
+
+        if (error) {
+            alert('Could not update profile: ' + error.message);
+        } else {
+            currentProfile.full_name = newName;
+            document.getElementById('profileName').textContent = newName;
+        }
     });
 
     // Payment Methods
@@ -277,7 +286,7 @@
 
     // Notifications
     document.getElementById('notificationsBtn').addEventListener('click', () => {
-        alert('You have 2 new notifications:\n- Your order #1234 has been shipped\n- New message from Downtown Market');
+        window.location.href = 'messages.html';
     });
 
     // Language
@@ -293,19 +302,14 @@
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', async () => {
         if (confirm('Are you sure you want to logout?')) {
-            try {
-                // DEMO MODE: Clear localStorage
-                localStorage.removeItem('demoUser');
-                window.location.href = 'login.html';
-            } catch (error) {
-                alert('Logout failed: ' + error.message);
-            }
+            await window.supabaseClient.auth.signOut();
+            window.location.href = 'login-role.html';
         }
     });
 
     // Search button
     document.getElementById('searchBtn').addEventListener('click', () => {
-        window.location.href = 'home.html';
+        window.location.href = 'index.html';
     });
 </script>
 </body>
