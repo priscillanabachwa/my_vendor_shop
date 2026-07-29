@@ -1,32 +1,100 @@
-# DigitalVendor Application Setup Guide
+# DigitalVendor Application - Role-Based Marketplace
+
+## 🚀 Overview
+
+DigitalVendor is a modern e-commerce platform with **role-based functionality** supporting both **Buyers** and **Vendors**. Users can choose their role during login/signup and access tailored dashboards and features.
+
+### Key Features
+- ✅ **Dual-Role System**: Buyers and Vendors with separate dashboards
+- ✅ **Vendor Dashboard**: Complete product management system
+- ✅ **Buyer Marketplace**: Browse, search, and purchase products
+- ✅ **Real-time Features**: Customer management, messaging, and analytics
+- ✅ **Product Management**: Add, edit, delete products with pricing
+- ✅ **Local Storage Persistence**: All data saved in browser
 
 ## Complete Application Structure
 
-Your DigitalVendor project now has a full working e-commerce application with 8 functional pages!
+Your DigitalVendor project now has a full working e-commerce application with role-based dashboards and features!
 
 ### 📁 Frontend Files
 
-**Authentication Pages:**
-- `login.html` - User login with email/password
-- `signup.html` - User registration
+**Authentication Pages (Role-Based):**
+- `login-role.html` - Login with role selection (Buyer or Vendor)
+- `signup-role.html` - Sign up with role selection
 - `reset-password.html` - Password reset page
 - `auth-callback.html` - OAuth callback handler
 
-**Main Application Pages:**
-- `home.html` - Marketplace homepage (main dashboard)
-- `profile.html` - User profile & settings
+**Buyer Pages:**
+- `index.html` - Marketplace homepage for buyers
+- `cart.html` - Shopping cart with checkout
 - `orders.html` - Order history
 - `messages.html` - Messages/notifications
-- `cart.html` - Shopping cart with checkout
+- `profile.html` - Buyer profile & settings
+
+**Vendor Pages:**
+- `vendor-dashboard.html` - **NEW** Complete vendor management system
 
 **Project Configuration:**
 - `package.json` - NPM dependencies
 - `supabase/config.toml` - Supabase configuration
-- `node_modules/` - Dependencies
 
 ## 🎯 Features Implemented
 
-### Home Page (`home.html`)
+### 🔐 Role-Based Authentication
+
+**Login & Signup System:**
+- Choose between **Buyer** or **Vendor** during login/signup
+- Role selection stored in browser's local storage
+- Automatic redirect based on selected role
+- OAuth support (Google, Microsoft)
+
+**Getting Started:**
+1. Go to `http://127.0.0.1:8000/login-role.html` or `http://127.0.0.1:8000/signup-role.html`
+2. Select your role: 👤 **Buyer** or 🏢 **Vendor**
+3. Enter your credentials
+4. Access role-specific dashboard
+
+### 📊 Vendor Dashboard (`vendor-dashboard.html`)
+
+**Overview Tab:**
+- 📦 Total Products count
+- 👥 Total Customers count
+- 💰 Total Revenue tracker
+- ⭐ Vendor Rating display
+
+**Products Tab:**
+- ✅ Add new products with:
+  - Product name and description
+  - Category selection (Food, Clothes, Electronics, Produce)
+  - Pricing
+  - Stock quantity
+  - Custom product icons
+- ✏️ Edit existing products
+- 🗑️ Delete products
+- 📊 View sales data per product
+
+**Customers Tab:**
+- 👥 View all customers
+- 📊 Customer statistics:
+  - Purchase history
+  - Total spent
+  - Join dates
+- 📧 Customer email tracking
+
+**Messages Tab:**
+- 💬 Receive messages from customers
+- 📝 Reply to customer inquiries
+- 📅 Message timestamps
+- 📌 Message history
+
+**Features:**
+- Dashboard statistics update in real-time
+- Switch between Buyer and Vendor modes
+- Secure logout functionality
+- Data persistence using local storage
+
+### 🛍️ Buyer Marketplace (`index.html`)
+### 🛍️ Buyer Marketplace (`index.html`)
 ✅ Product browsing with category filtering
 ✅ Search functionality for products
 ✅ Add to cart button for each product
@@ -42,10 +110,9 @@ Your DigitalVendor project now has a full working e-commerce application with 8 
 ✅ Payment Methods management
 ✅ Notifications settings
 ✅ Language selection
-✅ Help & Support
-✅ **Fully functional Logout button**
+✅ Switch to Vendor mode
+✅ Fully functional Logout button
 ✅ User verification badge
-✅ Gold Merchant status display
 
 ### Shopping Cart (`cart.html`)
 ✅ Display all cart items
@@ -69,10 +136,11 @@ Your DigitalVendor project now has a full working e-commerce application with 8 
 ✅ Message previews
 
 ### Authentication Pages
-✅ **Email/Password Login** - Full authentication
-✅ **User Registration** - Create new accounts
+✅ **Email/Password Login** - Full authentication with role selection
+✅ **User Registration** - Create new accounts with role selection
 ✅ **Password Reset** - Request reset links
 ✅ **Google OAuth** - Sign in with Google (requires setup)
+✅ **Microsoft OAuth** - Sign in with Microsoft (requires setup)
 ✅ **Form Validation** - Email and password checks
 ✅ **Error Handling** - Clear error messages
 ✅ **Success Feedback** - Confirmation messages
@@ -87,10 +155,81 @@ All pages are connected with a **persistent bottom navigation bar** showing:
 
 The active page is highlighted in orange, making navigation intuitive.
 
+## � How to Use the New Role-Based Features
+
+### As a Buyer 🛍️
+
+1. **Sign Up/Login:**
+   - Navigate to `http://127.0.0.1:8000/login-role.html`
+   - Click on the **Buyer** role card
+   - Enter credentials or use social login
+   - Click "Sign In"
+
+2. **Browse Products:**
+   - View all available products on the marketplace
+   - Use category filters to narrow down options
+   - Use search bar to find specific products
+
+3. **Make Purchases:**
+   - Click "Add to Cart" on any product
+   - View cart by clicking the floating 🛒 button
+   - Manage quantities and remove items
+   - Proceed to checkout
+
+4. **Manage Account:**
+   - Click on Profile (👤) in bottom navigation
+   - View account settings
+   - Switch to Vendor mode if desired
+   - Logout when done
+
+### As a Vendor 🏢
+
+1. **Sign Up/Login:**
+   - Navigate to `http://127.0.0.1:8000/login-role.html`
+   - Click on the **Vendor** role card
+   - Enter credentials or use social login
+   - Click "Sign In"
+
+2. **Add Products:**
+   - Navigate to the "My Products" tab
+   - Click "+ Add New Product"
+   - Fill in product details:
+     - Product name
+     - Category
+     - Price
+     - Stock quantity
+     - Product icon (emoji or symbol)
+     - Description
+   - Click "Save Product"
+
+3. **Manage Products:**
+   - View all your products in the "My Products" tab
+   - Click "Edit" to modify product details
+   - Click "Delete" to remove products
+   - Monitor stock levels and sales
+
+4. **View Customers:**
+   - Go to "Customers" tab
+   - See all customers who purchased from you
+   - View purchase history and spending
+   - Track customer join dates
+
+5. **Communicate:**
+   - Check "Messages" tab for customer inquiries
+   - Reply to customer messages
+   - Maintain communication history
+
+6. **Monitor Performance:**
+   - View dashboard overview stats:
+     - Total products
+     - Customer count
+     - Total revenue
+     - Vendor rating
+
 ## 🛒 Shopping Features
 
 **Product Catalog:**
-- 4 sample products with images, prices, and locations
+- Multiple sample products with images, prices, and locations
 - Category filtering (Food, Clothes, Electronics, Produce)
 - Search functionality
 - Verified vendor badges
@@ -99,10 +238,41 @@ The active page is highlighted in orange, making navigation intuitive.
 - Add to cart from product cards
 - Increase/decrease quantities
 - Remove items
+- Real-time total calculation
+- Remove items
 - Cart persists using localStorage
 - Cart badge shows item count
 
-## 🔐 Security & Authentication
+## � Data Storage
+
+All data is stored in **browser's localStorage** for demonstration purposes:
+
+**User Data:**
+- `userRole` - "buyer" or "vendor"
+- `userName` - User's display name
+- `userEmail` - User's email address
+- `isLoggedIn` - Login status
+
+**Vendor Data:**
+- `vendorProducts` - JSON array of vendor's products
+- `vendorCustomers` - JSON array of customers
+- `vendorMessages` - JSON array of messages
+
+**Buyer Data:**
+- `cart` - JSON array of items in shopping cart
+
+## 🔄 Switching Between Roles
+
+**From Buyer Dashboard:**
+- Go to Profile (👤)
+- Click "Switch to Vendor Mode"
+- Redirects to Vendor Dashboard
+
+**From Vendor Dashboard:**
+- Click "Switch to Buyer Mode" in top-right
+- Redirects to Buyer Marketplace
+
+## �🔐 Security & Authentication
 
 All pages except login/signup require authentication:
 - Auto-redirects to login if not authenticated

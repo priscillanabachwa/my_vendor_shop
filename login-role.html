@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - DigitalVendor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 450px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .role-card {
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            background: white;
+        }
+
+        .role-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+
+        .role-card.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .role-card.selected .icon {
+            font-size: 32px;
+        }
+
+        .role-card .icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .role-card .title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .role-card .description {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .form-group.active {
+            display: block;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .error-message {
+            color: #d32f2f;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .btn-login.active {
+            display: block;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+            color: #999;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #ddd;
+        }
+
+        .social-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .social-buttons.active {
+            display: grid;
+        }
+
+        .social-btn {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .social-btn:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .links {
+            text-align: center;
+            font-size: 13px;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .success-message {
+            background: #4CAF50;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🏪</div>
+            <h1>DigitalVendor</h1>
+            <p>Choose your role to get started</p>
+        </div>
+
+        <div class="role-selector">
+            <div class="role-card" onclick="selectRole('buyer')">
+                <div class="icon">🛍️</div>
+                <div class="title">Buyer</div>
+                <div class="description">Browse & purchase products</div>
+            </div>
+            <div class="role-card" onclick="selectRole('vendor')">
+                <div class="icon">🏢</div>
+                <div class="title">Vendor</div>
+                <div class="description">Sell your products</div>
+            </div>
+        </div>
+
+        <div class="success-message" id="successMessage"></div>
+
+        <!-- Login Form -->
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group active" id="emailGroup">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="you@example.com" required>
+                <div class="error-message" id="emailError"></div>
+            </div>
+
+            <div class="form-group active" id="passwordGroup">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
+                <div class="error-message" id="passwordError"></div>
+            </div>
+
+            <button type="submit" class="btn-login active" id="loginBtn">Sign In</button>
+        </form>
+
+        <div class="divider">OR</div>
+
+        <div class="social-buttons active" id="socialButtons">
+            <button class="social-btn" onclick="handleGoogleLogin()">
+                <span>🔵</span>
+            </button>
+            <button class="social-btn" onclick="handleMicrosoftLogin()">
+                <span>⬛</span>
+            </button>
+        </div>
+
+        <div class="links">
+            Don't have an account? <a href="signup.html">Sign Up</a><br>
+            <a href="reset-password.html">Forgot Password?</a>
+        </div>
+    </div>
+
+    <script>
+        let selectedRole = null;
+
+        function selectRole(role) {
+            selectedRole = role;
+            
+            // Update UI
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.role-card').classList.add('selected');
+
+            // Show form
+            document.querySelectorAll('.form-group').forEach(group => {
+                group.classList.add('active');
+            });
+            document.getElementById('loginBtn').classList.add('active');
+            document.getElementById('socialButtons').classList.add('active');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+
+            if (!selectedRole) {
+                showError('Please select a role (Buyer or Vendor)');
+                return;
+            }
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Validate
+            if (!email || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            // Store user info and role
+            localStorage.setItem('userRole', selectedRole);
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userName', email.split('@')[0]);
+
+            // If vendor, also initialize vendor data
+            if (selectedRole === 'vendor') {
+                if (!localStorage.getItem('vendorProducts')) {
+                    localStorage.setItem('vendorProducts', JSON.stringify([]));
+                }
+                if (!localStorage.getItem('vendorCustomers')) {
+                    localStorage.setItem('vendorCustomers', JSON.stringify([]));
+                }
+                window.location.href = 'vendor-dashboard.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        function handleGoogleLogin() {
+            if (!selectedRole) {
+                showError('Please select a role first');
+                return;
+            }
+            showSuccess(`Logging in as ${selectedRole} with Google...`);
+            setTimeout(() => {
+                localStorage.setItem('userRole', selectedRole);
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userName', 'Google User');
+                
+                if (selectedRole === 'vendor') {
+                    if (!localStorage.getItem('vendorProducts')) {
+                        localStorage.setItem('vendorProducts', JSON.stringify([]));
+                    }
+                    if (!localStorage.getItem('vendorCustomers')) {
+                        localStorage.setItem('vendorCustomers', JSON.stringify([]));
+                    }
+                    window.location.href = 'vendor-dashboard.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }, 1500);
+        }
+
+        function handleMicrosoftLogin() {
+            if (!selectedRole) {
+                showError('Please select a role first');
+                return;
+            }
+            showSuccess(`Logging in as ${selectedRole} with Microsoft...`);
+            setTimeout(() => {
+                localStorage.setItem('userRole', selectedRole);
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userName', 'Microsoft User');
+                
+                if (selectedRole === 'vendor') {
+                    if (!localStorage.getItem('vendorProducts')) {
+                        localStorage.setItem('vendorProducts', JSON.stringify([]));
+                    }
+                    if (!localStorage.getItem('vendorCustomers')) {
+                        localStorage.setItem('vendorCustomers', JSON.stringify([]));
+                    }
+                    window.location.href = 'vendor-dashboard.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }, 1500);
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message show';
+            errorDiv.textContent = message;
+            document.querySelector('.container').insertBefore(errorDiv, document.getElementById('loginForm'));
+            setTimeout(() => errorDiv.remove(), 3000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.classList.add('show');
+            setTimeout(() => successDiv.classList.remove('show'), 3000);
+        }
+
+        // Check if already logged in
+        window.addEventListener('load', () => {
+            if (localStorage.getItem('isLoggedIn')) {
+                const role = localStorage.getItem('userRole');
+                if (role === 'vendor') {
+                    window.location.href = 'vendor-dashboard.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
