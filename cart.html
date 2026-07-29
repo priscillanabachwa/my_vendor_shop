@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.6"></script>
+    <script src="js/supabase-client.js"></script>
     <style>
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -33,7 +34,7 @@
     <div id="emptyCart" class="text-center py-12">
         <span class="material-symbols-outlined text-6xl text-stone-300 mb-4 block">shopping_cart</span>
         <p class="text-stone-500 mb-4">Your cart is empty</p>
-        <a href="home.html" class="inline-block px-6 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-colors">Continue Shopping</a>
+        <a href="index.html" class="inline-block px-6 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-colors">Continue Shopping</a>
     </div>
 
     <div id="cartSummary" class="bg-white rounded-2xl p-6 shadow-sm border border-stone-100 mt-8 hidden">
@@ -56,7 +57,7 @@
                 <span id="total">$0.00</span>
             </div>
         </div>
-        <button class="w-full py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-colors">
+        <button id="checkoutBtn" class="w-full py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-colors">
             Proceed to Checkout
         </button>
     </div>
@@ -64,7 +65,7 @@
 
 <!-- Navigation Bar -->
 <nav class="fixed bottom-0 w-full z-50 rounded-t-2xl bg-white border-t border-stone-100 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] flex justify-around items-center h-20 px-2">
-    <a class="flex flex-col items-center justify-center text-stone-400 px-4 py-1 hover:text-orange-500 transition-colors active:scale-90 transition-transform duration-150" href="home.html">
+    <a class="flex flex-col items-center justify-center text-stone-400 px-4 py-1 hover:text-orange-500 transition-colors active:scale-90 transition-transform duration-150" href="index.html">
         <span class="material-symbols-outlined">home</span>
         <span class="font-['Plus_Jakarta_Sans'] text-[11px] font-medium">Home</span>
     </a>
@@ -83,20 +84,16 @@
 </nav>
 
 <script>
-    // DEMO MODE - Check for logged-in user
-    
-    // Check authentication
-    function checkAuth() {
-        const demoUser = localStorage.getItem('demoUser');
-        if (!demoUser) {
-            window.location.href = 'login.html';
-        }
-    }
-    
-    checkAuth();
+    let currentUser = null;
+    let cart = [];
 
-    // Load cart
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    async function init() {
+        const result = await requireSession();
+        if (!result) return;
+        currentUser = result.session.user;
+        cart = JSON.parse(localStorage.getItem('cart')) || [];
+        renderCart();
+    }
 
     function renderCart() {
         const container = document.getElementById('cartContainer');
@@ -115,10 +112,9 @@
 
         container.innerHTML = cart.map((item, index) => `
             <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-100 flex gap-4">
-                <img src="${item.image}" alt="${item.name}" class="w-24 h-24 object-cover rounded-lg"/>
+                <div class="w-24 h-24 flex items-center justify-center text-4xl bg-orange-50 rounded-lg">${escapeHtml(item.icon || '🛍️')}</div>
                 <div class="flex-1">
-                    <h3 class="font-semibold mb-1">${item.name}</h3>
-                    <p class="text-sm text-stone-500 mb-2">${item.location}</p>
+                    <h3 class="font-semibold mb-1">${escapeHtml(item.name)}</h3>
                     <div class="flex items-center justify-between">
                         <span class="text-orange-600 font-bold">$${item.price.toFixed(2)}</span>
                         <div class="flex items-center gap-2">
@@ -174,10 +170,54 @@
 
     // Back button
     document.getElementById('backBtn').addEventListener('click', () => {
-        window.location.href = 'home.html';
+        window.location.href = 'index.html';
     });
 
-    renderCart();
+    document.getElementById('checkoutBtn').addEventListener('click', async () => {
+        if (cart.length === 0 || !currentUser) return;
+
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        checkoutBtn.disabled = true;
+        checkoutBtn.textContent = 'Placing order...';
+
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const total = subtotal + 5.00 + (subtotal * 0.1);
+
+        const { data: order, error: orderError } = await window.supabaseClient
+            .from('orders')
+            .insert({ buyer_id: currentUser.id, total, status: 'pending' })
+            .select()
+            .single();
+
+        if (orderError) {
+            alert('Could not place order: ' + orderError.message);
+            checkoutBtn.disabled = false;
+            checkoutBtn.textContent = 'Proceed to Checkout';
+            return;
+        }
+
+        const items = cart.map(item => ({
+            order_id: order.id,
+            product_id: item.id,
+            vendor_id: item.vendorId,
+            quantity: item.quantity,
+            price: item.price
+        }));
+
+        const { error: itemsError } = await window.supabaseClient.from('order_items').insert(items);
+
+        if (itemsError) {
+            alert('Could not save order items: ' + itemsError.message);
+            checkoutBtn.disabled = false;
+            checkoutBtn.textContent = 'Proceed to Checkout';
+            return;
+        }
+
+        localStorage.removeItem('cart');
+        window.location.href = 'orders.html';
+    });
+
+    init();
 </script>
 </body>
 </html>
