@@ -32,11 +32,15 @@ Your DigitalVendor project now has a full working e-commerce application with ro
 - `profile.html` - Buyer profile & settings
 
 **Vendor Pages:**
-- `vendor-dashboard.html` - **NEW** Complete vendor management system
+- `vendor-dashboard.html` - Complete vendor management system
+
+**Shared:**
+- `js/supabase-client.js` - One place for the Supabase URL/anon key, the `requireSession()` auth guard, and the `escapeHtml()` helper used across every page
 
 **Project Configuration:**
 - `package.json` - NPM dependencies
 - `supabase/config.toml` - Supabase configuration
+- `supabase/migrations/` - Database schema (profiles, products, orders, order_items, messages) with row level security policies
 
 ## 🎯 Features Implemented
 
@@ -245,21 +249,16 @@ The active page is highlighted in orange, making navigation intuitive.
 
 ## � Data Storage
 
-All data is stored in **browser's localStorage** for demonstration purposes:
+Authentication, products, orders and messages are stored in **real Supabase tables** (see `supabase/migrations/`). Only the shopping cart stays in the browser until checkout:
 
-**User Data:**
-- `userRole` - "buyer" or "vendor"
-- `userName` - User's display name
-- `userEmail` - User's email address
-- `isLoggedIn` - Login status
+**Supabase tables:**
+- `profiles` - one row per user (`full_name`, `email`, `role`), auto-created by a trigger when someone signs up
+- `products` - a vendor's product catalog
+- `orders` / `order_items` - created at checkout
+- `messages` - buyer/vendor conversations
 
-**Vendor Data:**
-- `vendorProducts` - JSON array of vendor's products
-- `vendorCustomers` - JSON array of customers
-- `vendorMessages` - JSON array of messages
-
-**Buyer Data:**
-- `cart` - JSON array of items in shopping cart
+**Browser localStorage:**
+- `cart` - JSON array of items in the shopping cart, cleared once checkout creates a real order
 
 ## 🔄 Switching Between Roles
 
@@ -279,76 +278,53 @@ All pages except login/signup require authentication:
 - Session persistence across page navigation
 - Secure logout functionality
 
-## ⚠️ IMPORTANT: Update Supabase Credentials
+## ⚠️ Supabase setup
 
-The application uses **placeholder Supabase keys**. You MUST update them:
-
-### Steps:
-1. Visit https://app.supabase.com
-2. Select your DigitalVendor project
-3. Go to **Settings** > **API**
-4. Copy your **Project URL** and **Anon Key**
-5. Update ALL HTML files - Replace these lines:
+`js/supabase-client.js` already points at the real linked project (ref `iunirrrnjxzxtqfgvjjn`) — every page includes that one file instead of each having its own copy of the URL/anon key. If you fork this into your own Supabase project, that's the only file you need to change:
 
 ```javascript
-const SUPABASE_URL = 'https://iunirrrnjxzxtqfgvjjn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+const SUPABASE_URL = 'YOUR_PROJECT_URL';
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
 ```
 
-With your actual credentials:
-```javascript
-const SUPABASE_URL = 'YOUR_ACTUAL_URL';
-const SUPABASE_ANON_KEY = 'YOUR_ACTUAL_KEY';
+### Applying the database schema
+
+The tables/RLS policies live in `supabase/migrations/`. Push them to the linked project with:
+
+```bash
+npx supabase db push --linked
 ```
 
-### Files that need updating:
-- login.html
-- signup.html
-- home.html
-- profile.html
-- cart.html
-- orders.html
-- messages.html
-- reset-password.html
-- auth-callback.html
-- dashboard.html (optional - now redirects to home)
+This will prompt for the database password (Settings > Database in the Supabase dashboard) if it isn't already cached locally. Alternatively, paste the contents of the migration file into the Supabase Studio SQL editor and run it there.
 
 ## 🚀 Running the Application
 
 ### Option 1: Direct Browser (Simplest)
 ```bash
-# Just open login.html in your browser
-# http://file:///C:/Users/hp/OneDrive/Desktop/DigitalVendor/login.html
+# Just open login-role.html in your browser
 ```
 
 ### Option 2: Local Web Server (Recommended)
 ```bash
-# Using Python
-python -m http.server 8000
-
-# Using Node.js
-npx http-server
-
-# Then visit: http://localhost:8000/login.html
+npm start
+# Then visit: http://localhost:8000/login-role.html
 ```
 
 ### Option 3: VS Code Live Server
 1. Install "Live Server" extension
-2. Right-click login.html
+2. Right-click login-role.html
 3. Select "Open with Live Server"
 
 ## 📱 Testing the Application
 
 ### Test Flow:
-1. **Sign Up** - Create new account at signup.html
-2. **Login** - Sign in with your credentials
-3. **Browse** - View products on home.html
-4. **Search** - Filter products by name
-5. **Categories** - Click category buttons
-6. **Cart** - Add items and view cart
+1. **Sign Up as a vendor** at signup-role.html, add a product from the dashboard
+2. **Log out**, **sign up as a buyer**, confirm the product appears on index.html
+3. **Search / Categories** - Filter products
+4. **Cart** - Add the product, proceed to checkout
+5. **Orders** - Confirm the order you just placed shows up
+6. **Messages** - Message the vendor from a product card, then check the vendor dashboard's Messages tab
 7. **Profile** - Check settings and logout
-8. **Messages** - View vendor messages
-9. **Orders** - Check order history
 
 ## 📊 Data Management
 
@@ -358,19 +334,10 @@ npx http-server
 
 ### Supabase (Backend):
 - User authentication
-- User profiles
-- Will store orders, products, messages
+- User profiles (with role)
+- Products, orders, order items, messages
 
-### Sample Data:
-Product data is currently hardcoded for demo purposes. To connect to Supabase database:
-
-```javascript
-// Example: Load products from Supabase
-const { data: products } = await supabase
-    .from('products')
-    .select('*')
-    .eq('category', 'food');
-```
+Vendors start with an empty product catalog — sign up as a vendor and add a product or two from the dashboard to populate the marketplace.
 
 ## 🎨 UI/UX Features
 
@@ -394,38 +361,21 @@ const { data: products } = await supabase
 ### Change Brand Colors:
 Edit Tailwind config in each HTML file's `<script id="tailwind-config">` section
 
-### Add More Products:
-Add to the `products` array in home.html:
-```javascript
-{ 
-    id: 5, 
-    name: 'New Product', 
-    price: 99.99, 
-    location: 'New Location',
-    category: 'food',
-    image: 'image_url'
-}
-```
+### Add Products:
+Sign in as a vendor and use the "+ Add New Product" button on vendor-dashboard.html — this inserts a row into the real `products` table.
 
 ### Add New Categories:
-1. Add button in home.html categories section
-2. Add category to products array
-3. Update category filtering logic
+1. Add an `<option>` to the category `<select>` in vendor-dashboard.html's product form
+2. Add a matching filter button in index.html's category-buttons section
 
 ## 📝 Next Steps
 
-1. ✅ Update Supabase credentials (REQUIRED)
-2. Create database tables in Supabase:
-   - products
-   - orders
-   - order_items
-   - messages
-3. Set up database relationships
-4. Connect product loading to Supabase
-5. Implement real order processing
-6. Add payment integration (Stripe, etc.)
-7. Set up email notifications
-8. Deploy to production
+1. Push `supabase/migrations/` to the linked project (`npx supabase db push --linked`) if you haven't yet
+2. Add payment integration (Stripe, etc.) — checkout currently creates a real order but doesn't collect payment
+3. Set up email notifications (order confirmations, new messages)
+4. Configure Google/Microsoft OAuth in the Supabase dashboard if you want those login buttons to work
+5. Add a product rating/review system to back the vendor dashboard's Rating stat
+6. Deploy to production
 
 ## 🐛 Troubleshooting
 
