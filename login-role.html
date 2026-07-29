@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - DigitalVendor</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.6"></script>
+    <script src="js/supabase-client.js"></script>
     <style>
         * {
             margin: 0;
@@ -253,12 +255,12 @@
         </div>
 
         <div class="role-selector">
-            <div class="role-card" onclick="selectRole('buyer')">
+            <div class="role-card" onclick="selectRole('buyer', event)">
                 <div class="icon">🛍️</div>
                 <div class="title">Buyer</div>
                 <div class="description">Browse & purchase products</div>
             </div>
-            <div class="role-card" onclick="selectRole('vendor')">
+            <div class="role-card" onclick="selectRole('vendor', event)">
                 <div class="icon">🏢</div>
                 <div class="title">Vendor</div>
                 <div class="description">Sell your products</div>
@@ -296,7 +298,7 @@
         </div>
 
         <div class="links">
-            Don't have an account? <a href="signup.html">Sign Up</a><br>
+            Don't have an account? <a href="signup-role.html">Sign Up</a><br>
             <a href="reset-password.html">Forgot Password?</a>
         </div>
     </div>
@@ -304,9 +306,9 @@
     <script>
         let selectedRole = null;
 
-        function selectRole(role) {
+        function selectRole(role, event) {
             selectedRole = role;
-            
+
             // Update UI
             document.querySelectorAll('.role-card').forEach(card => {
                 card.classList.remove('selected');
@@ -321,91 +323,49 @@
             document.getElementById('socialButtons').classList.add('active');
         }
 
-        function handleLogin(event) {
-            event.preventDefault();
+        async function redirectForRole(userId) {
+            const { data: profile } = await window.supabaseClient
+                .from('profiles')
+                .select('role')
+                .eq('id', userId)
+                .single();
+            window.location.href = profile && profile.role === 'vendor' ? 'vendor-dashboard.html' : 'index.html';
+        }
 
-            if (!selectedRole) {
-                showError('Please select a role (Buyer or Vendor)');
-                return;
-            }
+        async function handleLogin(event) {
+            event.preventDefault();
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Validate
             if (!email || !password) {
                 showError('Please fill in all fields');
                 return;
             }
 
-            // Store user info and role
-            localStorage.setItem('userRole', selectedRole);
-            localStorage.setItem('userEmail', email);
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userName', email.split('@')[0]);
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Signing in...';
 
-            // If vendor, also initialize vendor data
-            if (selectedRole === 'vendor') {
-                if (!localStorage.getItem('vendorProducts')) {
-                    localStorage.setItem('vendorProducts', JSON.stringify([]));
-                }
-                if (!localStorage.getItem('vendorCustomers')) {
-                    localStorage.setItem('vendorCustomers', JSON.stringify([]));
-                }
-                window.location.href = 'vendor-dashboard.html';
-            } else {
-                window.location.href = 'index.html';
+            const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Sign In';
+
+            if (error) {
+                showError(error.message);
+                return;
             }
+
+            await redirectForRole(data.user.id);
         }
 
         function handleGoogleLogin() {
-            if (!selectedRole) {
-                showError('Please select a role first');
-                return;
-            }
-            showSuccess(`Logging in as ${selectedRole} with Google...`);
-            setTimeout(() => {
-                localStorage.setItem('userRole', selectedRole);
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userName', 'Google User');
-                
-                if (selectedRole === 'vendor') {
-                    if (!localStorage.getItem('vendorProducts')) {
-                        localStorage.setItem('vendorProducts', JSON.stringify([]));
-                    }
-                    if (!localStorage.getItem('vendorCustomers')) {
-                        localStorage.setItem('vendorCustomers', JSON.stringify([]));
-                    }
-                    window.location.href = 'vendor-dashboard.html';
-                } else {
-                    window.location.href = 'index.html';
-                }
-            }, 1500);
+            showError('Google login isn\'t configured yet.');
         }
 
         function handleMicrosoftLogin() {
-            if (!selectedRole) {
-                showError('Please select a role first');
-                return;
-            }
-            showSuccess(`Logging in as ${selectedRole} with Microsoft...`);
-            setTimeout(() => {
-                localStorage.setItem('userRole', selectedRole);
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userName', 'Microsoft User');
-                
-                if (selectedRole === 'vendor') {
-                    if (!localStorage.getItem('vendorProducts')) {
-                        localStorage.setItem('vendorProducts', JSON.stringify([]));
-                    }
-                    if (!localStorage.getItem('vendorCustomers')) {
-                        localStorage.setItem('vendorCustomers', JSON.stringify([]));
-                    }
-                    window.location.href = 'vendor-dashboard.html';
-                } else {
-                    window.location.href = 'index.html';
-                }
-            }, 1500);
+            showError('Microsoft login isn\'t configured yet.');
         }
 
         function showError(message) {
@@ -423,15 +383,11 @@
             setTimeout(() => successDiv.classList.remove('show'), 3000);
         }
 
-        // Check if already logged in
-        window.addEventListener('load', () => {
-            if (localStorage.getItem('isLoggedIn')) {
-                const role = localStorage.getItem('userRole');
-                if (role === 'vendor') {
-                    window.location.href = 'vendor-dashboard.html';
-                } else {
-                    window.location.href = 'index.html';
-                }
+        // If already logged in, skip straight to the right dashboard
+        window.addEventListener('load', async () => {
+            const { data: { session } } = await window.supabaseClient.auth.getSession();
+            if (session) {
+                await redirectForRole(session.user.id);
             }
         });
     </script>
