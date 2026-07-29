@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.6"></script>
+    <script src="js/supabase-client.js"></script>
     <style>
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -42,24 +43,26 @@
 </main>
 
 <script>
-    const SUPABASE_URL = 'https://iunirrrnjxzxtqfgvjjn.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1bmlycnJuanh6eHRxZmd2ampuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4NjE4ODUsImV4cCI6MjA5MjQzNzg4NX0.rVFa8YOBPcXN7bhHx1WbvYZv0aIZCtb2Y2RdXrjhtUA';
-    
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let redirected = false;
 
-    supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = window.supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (redirected) return;
         if (session) {
-            // User is authenticated, redirect to dashboard
-            window.location.href = 'dashboard.html';
+            redirected = true;
+            subscription.unsubscribe();
+            clearTimeout(fallbackTimer);
+            window.location.href = 'index.html';
         } else if (event === 'SIGNED_OUT') {
-            // Authentication failed, redirect to login
-            window.location.href = 'login.html';
+            redirected = true;
+            subscription.unsubscribe();
+            clearTimeout(fallbackTimer);
+            window.location.href = 'login-role.html';
         }
     });
 
-    // Fallback: redirect after 5 seconds if no auth state change
-    setTimeout(() => {
-        window.location.href = 'login.html';
+    // Fallback: redirect after 5 seconds if no auth state change fires
+    const fallbackTimer = setTimeout(() => {
+        if (!redirected) window.location.href = 'login-role.html';
     }, 5000);
 </script>
 </body>
