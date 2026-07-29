@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.6"></script>
+    <script src="js/supabase-client.js"></script>
     <style>
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -26,53 +27,16 @@
 </header>
 
 <main class="pt-20 pb-24 px-5 max-w-md mx-auto">
-    <!-- Sample Messages -->
-    <div class="space-y-3">
-        <!-- Message 1 -->
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-100 cursor-pointer hover:bg-stone-50 transition-colors flex items-center gap-3">
-            <div class="w-12 h-12 rounded-full bg-orange-200 flex items-center justify-center flex-shrink-0">
-                <span class="material-symbols-outlined text-orange-600">storefront</span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <h3 class="font-semibold text-on-surface">Downtown Market</h3>
-                <p class="text-sm text-stone-500 truncate">Thanks for your purchase! Your order is being prepared...</p>
-                <p class="text-xs text-stone-400 mt-1">2 hours ago</p>
-            </div>
-            <div class="w-2 h-2 bg-orange-600 rounded-full flex-shrink-0"></div>
-        </div>
+    <div id="threadsList" class="space-y-3"></div>
 
-        <!-- Message 2 -->
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-100 cursor-pointer hover:bg-stone-50 transition-colors flex items-center gap-3">
-            <div class="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center flex-shrink-0">
-                <span class="material-symbols-outlined text-blue-600">devices</span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <h3 class="font-semibold text-on-surface">Tech Hub Plaza</h3>
-                <p class="text-sm text-stone-500 truncate">We have a special offer on Smart Watches this week!</p>
-                <p class="text-xs text-stone-400 mt-1">1 day ago</p>
-            </div>
-        </div>
-
-        <!-- Message 3 -->
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-100 cursor-pointer hover:bg-stone-50 transition-colors flex items-center gap-3">
-            <div class="w-12 h-12 rounded-full bg-green-200 flex items-center justify-center flex-shrink-0">
-                <span class="material-symbols-outlined text-green-600">potted_plant</span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <h3 class="font-semibold text-on-surface">Fresh Produce Co</h3>
-                <p class="text-sm text-stone-500 truncate">New organic vegetables in stock! Order now for same-day delivery</p>
-                <p class="text-xs text-stone-400 mt-1">3 days ago</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="text-center py-12 text-stone-400">
-        <p class="text-sm">You're all caught up!</p>
+    <div id="emptyMessages" class="text-center py-12 text-stone-400 hidden">
+        <span class="material-symbols-outlined text-6xl text-stone-300 mb-4 block">forum</span>
+        <p class="text-sm">No messages yet</p>
     </div>
 </main>
 
 <nav class="fixed bottom-0 w-full z-50 rounded-t-2xl bg-white border-t border-stone-100 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] flex justify-around items-center h-20 px-2">
-    <a class="flex flex-col items-center justify-center text-stone-400 px-4 py-1 hover:text-orange-500 transition-colors active:scale-90 transition-transform duration-150" href="home.html">
+    <a class="flex flex-col items-center justify-center text-stone-400 px-4 py-1 hover:text-orange-500 transition-colors active:scale-90 transition-transform duration-150" href="index.html">
         <span class="material-symbols-outlined">home</span>
         <span class="font-['Plus_Jakarta_Sans'] text-[11px] font-medium">Home</span>
     </a>
@@ -91,25 +55,80 @@
 </nav>
 
 <script>
-    // DEMO MODE - Check for logged-in user
-    const demoUser = localStorage.getItem('demoUser');
-    if (!demoUser) {
-        window.location.href = 'login.html';
+    let myId = null;
+
+    async function init() {
+        const result = await requireSession();
+        if (!result) return;
+        myId = result.session.user.id;
+        await loadThreads();
     }
 
+    async function loadThreads() {
+        const { data: messages, error } = await window.supabaseClient
+            .from('messages')
+            .select('*, sender:profiles!messages_sender_id_fkey(full_name), recipient:profiles!messages_recipient_id_fkey(full_name)')
+            .or(`sender_id.eq.${myId},recipient_id.eq.${myId}`)
+            .order('created_at', { ascending: true });
 
-    supabase.auth.onAuthStateChange((event, session) => {
-        if (!session) {
-            window.location.href = 'login.html';
+        const listEl = document.getElementById('threadsList');
+        const emptyEl = document.getElementById('emptyMessages');
+
+        if (error || !messages || messages.length === 0) {
+            listEl.innerHTML = '';
+            emptyEl.classList.remove('hidden');
+            return;
         }
-    });
+        emptyEl.classList.add('hidden');
 
-    // Message click handlers
-    document.querySelectorAll('main > div:first-child > div').forEach(message => {
-        message.addEventListener('click', () => {
-            alert('Message thread coming soon!');
+        const threads = new Map();
+        messages.forEach(msg => {
+            const iAmSender = msg.sender_id === myId;
+            const partnerId = iAmSender ? msg.recipient_id : msg.sender_id;
+            const partnerName = (iAmSender ? msg.recipient?.full_name : msg.sender?.full_name) || 'User';
+            const unread = !iAmSender && !msg.read;
+            threads.set(partnerId, { partnerId, partnerName, lastBody: msg.body, lastAt: msg.created_at, unread });
         });
-    });
+
+        listEl.innerHTML = [...threads.values()].reverse().map(t => `
+            <div class="thread bg-white rounded-2xl p-4 shadow-sm border border-stone-100 cursor-pointer hover:bg-stone-50 transition-colors flex items-center gap-3" data-partner-id="${t.partnerId}" data-partner-name="${escapeHtml(t.partnerName)}">
+                <div class="w-12 h-12 rounded-full bg-orange-200 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-orange-600">storefront</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-semibold text-on-surface">${escapeHtml(t.partnerName)}</h3>
+                    <p class="text-sm text-stone-500 truncate">${escapeHtml(t.lastBody)}</p>
+                    <p class="text-xs text-stone-400 mt-1">${new Date(t.lastAt).toLocaleString()}</p>
+                </div>
+                ${t.unread ? '<div class="w-2 h-2 bg-orange-600 rounded-full flex-shrink-0"></div>' : ''}
+            </div>
+        `).join('');
+
+        document.querySelectorAll('.thread').forEach(el => {
+            el.addEventListener('click', () => openThread(el.dataset.partnerId, el.dataset.partnerName));
+        });
+    }
+
+    async function openThread(partnerId, partnerName) {
+        await window.supabaseClient
+            .from('messages')
+            .update({ read: true })
+            .eq('sender_id', partnerId)
+            .eq('recipient_id', myId)
+            .eq('read', false);
+
+        const reply = prompt(`Reply to ${partnerName}:`);
+        if (reply) {
+            await window.supabaseClient.from('messages').insert({
+                sender_id: myId,
+                recipient_id: partnerId,
+                body: reply
+            });
+        }
+        await loadThreads();
+    }
+
+    init();
 </script>
 </body>
 </html>
