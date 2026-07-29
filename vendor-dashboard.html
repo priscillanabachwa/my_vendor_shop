@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vendor Dashboard - DigitalVendor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="css/theme.css" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.6"></script>
     <script src="js/supabase-client.js"></script>
     <style>
@@ -14,12 +16,13 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
+            font-family: var(--font-body);
+            background: var(--color-background);
+            color: var(--color-on-surface);
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--color-primary-container) 0%, var(--color-primary) 100%);
             color: white;
             padding: 20px;
             display: flex;
@@ -32,6 +35,7 @@
         }
 
         .header h1 {
+            font-family: var(--font-heading);
             font-size: 24px;
             font-weight: 700;
         }
@@ -44,7 +48,7 @@
 
         .btn-primary {
             background: white;
-            color: #667eea;
+            color: var(--color-primary);
             padding: 10px 20px;
             border-radius: 8px;
             border: none;
@@ -96,15 +100,15 @@
             background: white;
             cursor: pointer;
             font-weight: 600;
-            color: #666;
+            color: var(--color-on-surface-variant);
             transition: all 0.3s;
             border-bottom: 3px solid transparent;
         }
 
         .tab-btn.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+            background: rgba(160, 65, 0, 0.05);
         }
 
         .tab-content {
@@ -133,12 +137,12 @@
         .stat-value {
             font-size: 32px;
             font-weight: 700;
-            color: #667eea;
+            color: var(--color-primary);
             margin: 10px 0;
         }
 
         .stat-label {
-            color: #666;
+            color: var(--color-on-surface-variant);
             font-size: 14px;
         }
 
@@ -164,7 +168,7 @@
         .product-image {
             width: 100%;
             height: 150px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--color-primary-container) 0%, var(--color-primary) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -182,20 +186,20 @@
         }
 
         .product-price {
-            color: #667eea;
+            color: var(--color-primary);
             font-size: 18px;
             font-weight: 700;
             margin: 10px 0;
         }
 
         .product-category {
-            color: #999;
+            color: var(--color-outline);
             font-size: 12px;
             margin-bottom: 10px;
         }
 
         .product-stock {
-            background: #f0f0f0;
+            background: var(--color-surface-container-low);
             padding: 8px;
             border-radius: 4px;
             font-size: 12px;
@@ -219,21 +223,21 @@
         }
 
         .btn-edit {
-            background: #667eea;
+            background: var(--color-primary);
             color: white;
         }
 
         .btn-edit:hover {
-            background: #5568d3;
+            background: var(--color-primary-hover);
         }
 
         .btn-delete {
-            background: #ff6b6b;
+            background: var(--color-error);
             color: white;
         }
 
         .btn-delete:hover {
-            background: #ee5a52;
+            background: var(--color-error-hover);
         }
 
         /* Forms */
@@ -246,10 +250,11 @@
         }
 
         .form-title {
+            font-family: var(--font-heading);
             font-size: 24px;
             font-weight: 700;
             margin-bottom: 20px;
-            color: #333;
+            color: var(--color-on-surface);
         }
 
         .form-group {
@@ -259,7 +264,7 @@
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #333;
+            color: var(--color-on-surface);
             font-weight: 600;
             font-size: 14px;
         }
@@ -269,7 +274,7 @@
         .form-group select {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--color-outline-variant);
             border-radius: 8px;
             font-size: 14px;
             font-family: inherit;
@@ -279,8 +284,8 @@
         .form-group textarea:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(160, 65, 0, 0.1);
         }
 
         .form-group textarea {
@@ -295,7 +300,7 @@
         }
 
         .btn-submit {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--color-primary-container) 0%, var(--color-primary) 100%);
             color: white;
             padding: 12px 30px;
             border: none;
@@ -311,8 +316,8 @@
         }
 
         .btn-cancel {
-            background: #f0f0f0;
-            color: #333;
+            background: var(--color-surface-container-low);
+            color: var(--color-on-surface);
             padding: 12px 30px;
             border: none;
             border-radius: 8px;
@@ -362,24 +367,24 @@
         }
 
         .table thead {
-            background: #f5f5f5;
-            border-bottom: 2px solid #ddd;
+            background: var(--color-surface-container-low);
+            border-bottom: 2px solid var(--color-outline-variant);
         }
 
         .table th {
             padding: 15px;
             text-align: left;
             font-weight: 600;
-            color: #333;
+            color: var(--color-on-surface);
         }
 
         .table td {
             padding: 15px;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--color-outline-variant);
         }
 
         .table tbody tr:hover {
-            background: #f9f9f9;
+            background: var(--color-surface-container-low);
         }
 
         .badge {
@@ -391,13 +396,13 @@
         }
 
         .badge-success {
-            background: #4CAF50;
+            background: var(--color-tertiary);
             color: white;
         }
 
         .badge-pending {
-            background: #ff9800;
-            color: white;
+            background: var(--color-secondary-container);
+            color: var(--color-on-secondary-container);
         }
 
         .message-item {
@@ -422,16 +427,16 @@
 
         .message-from {
             font-weight: 600;
-            color: #333;
+            color: var(--color-on-surface);
         }
 
         .message-time {
             font-size: 12px;
-            color: #999;
+            color: var(--color-outline);
         }
 
         .message-text {
-            color: #666;
+            color: var(--color-on-surface-variant);
             font-size: 14px;
             margin-bottom: 10px;
         }
@@ -443,7 +448,7 @@
 
         .btn-reply {
             padding: 6px 12px;
-            background: #667eea;
+            background: var(--color-primary);
             color: white;
             border: none;
             border-radius: 6px;
@@ -453,13 +458,13 @@
         }
 
         .btn-reply:hover {
-            background: #5568d3;
+            background: var(--color-primary-hover);
         }
 
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            color: #999;
+            color: var(--color-outline);
         }
 
         .empty-state-icon {
@@ -471,11 +476,11 @@
             font-size: 20px;
             font-weight: 600;
             margin-bottom: 10px;
-            color: #666;
+            color: var(--color-on-surface-variant);
         }
 
         .success-message {
-            background: #4CAF50;
+            background: var(--color-tertiary);
             color: white;
             padding: 15px;
             border-radius: 8px;
@@ -539,7 +544,7 @@
         <!-- Products Tab -->
         <div id="products" class="tab-content">
             <div style="margin-bottom: 20px;">
-                <button class="btn-primary" onclick="openAddProductModal()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">+ Add New Product</button>
+                <button class="btn-primary" onclick="openAddProductModal()" style="background: linear-gradient(135deg, var(--color-primary-container) 0%, var(--color-primary) 100%); color: white;">+ Add New Product</button>
             </div>
             <div class="product-list" id="productsList"></div>
             <div class="empty-state" id="noProducts" style="display: none;">

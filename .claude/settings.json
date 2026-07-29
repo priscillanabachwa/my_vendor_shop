@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git rm *)",
+      "Bash(pkill -f \"http-server\")",
+      "Bash(npx supabase *)",
+      "Bash(grep -Ei '\\\\.\\(css|scss|less|html|tsx|jsx|vue|svelte|js|ts\\)$')"
+    ]
+  }
+}

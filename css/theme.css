@@ -1,0 +1,38 @@
+/* Shared color tokens for the plain-CSS pages (index, login, signup, vendor-dashboard).
+   Mirrors the Material Design 3 palette defined in js/tailwind-config.js so every
+   page in the app draws from the same source of truth. */
+:root {
+    --color-primary: #a04100;
+    --color-primary-hover: #7a3000;
+    --color-primary-container: #f27024;
+    --color-primary-container-hover: #d9631d;
+    --color-on-primary: #ffffff;
+    --color-on-primary-container: #541e00;
+
+    --color-secondary: #785900;
+    --color-secondary-container: #fdc003;
+    --color-on-secondary-container: #6c5000;
+
+    --color-tertiary: #42673b;
+    --color-tertiary-container: #78a16f;
+    --color-on-tertiary: #ffffff;
+
+    --color-error: #ba1a1a;
+    --color-error-hover: #93000a;
+    --color-error-container: #ffdad6;
+    --color-on-error-container: #93000a;
+
+    --color-background: #fff8f4;
+    --color-surface: #ffffff;
+    --color-surface-container: #f5ece7;
+    --color-surface-container-low: #faf2ed;
+    --color-surface-container-high: #efe7e1;
+
+    --color-on-surface: #1e1b18;
+    --color-on-surface-variant: #584238;
+    --color-outline: #8c7166;
+    --color-outline-variant: #e0c0b2;
+
+    --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-body: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
